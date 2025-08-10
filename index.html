@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SkinAI Detector - Skin Cancer Detection</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #000000;
+    color: #ffffff;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+.header {
+    background-color: #1a1a1a;
+    border-bottom: 2px solid #333;
+    padding: 20px 0;
+    box-shadow: 0 2px 10px rgba(255, 0, 0, 0.1);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.logo-text h1 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 5px;
+}
+
+.logo-text p {
+    font-size: 14px;
+    color: #cccccc;
+}
+
+/* Main Content */
+.main {
+    padding: 40px 0;
+    min-height: calc(100vh - 200px);
+}
+
+.step {
+    display: none;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.step.active {
+    display: block;
+}
+
+.card {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.card-header {
+    text-align: center;
+    padding: 30px;
+    border-bottom: 1px solid #333;
+}
+
+.card-header h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+.card-header p {
+    color: #cccccc;
+    font-size: 16px;
+}
+
+.card-content {
+    padding: 30px;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #cccccc;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #000000;
+    border: 2px solid #333;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #dc2626;
+}
+
+.form-group input::placeholder {
+    color: #666;
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin: 5px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #b91c1c, #dc2626);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: #cccccc;
+    border: 2px solid #333;
+}
+
+.btn-secondary:hover {
+    background-color: #333;
+    color: #ffffff;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #991b1b, #dc2626);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #7f1d1d, #991b1b);
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed #333;
+    border-radius: 15px;
+    padding: 60px 20px;
+    text-align: center;
+    background-color: #0a0a0a;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: #dc2626;
+    background-color: #111;
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.upload-area h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+.upload-area p {
+    color: #cccccc;
+    margin-bottom: 20px;
+}
+
+/* Image Preview */
+.image-preview {
+    text-align: center;
+}
+
+.image-preview img {
+    max-width: 400px;
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 15px;
+    border: 2px solid #333;
+    margin-bottom: 20px;
+}
+
+.image-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Loading */
+.loading-container {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #333;
+    border-top: 4px solid #dc2626;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Results */
+.results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.result-image img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 15px;
+    border: 2px solid #333;
+}
+
+.result-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.diagnosis h3,
+.confidence h3 {
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.diagnosis-result {
+    font-size: 24px;
+    font-weight: bold;
+    color: #dc2626;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background-color: #333;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #dc2626, #ef4444);
+    border-radius: 6px;
+    transition: width 1s ease;
+}
+
+.detailed-info,
+.recommendation {
+    background-color: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.detailed-info h3,
+.recommendation h3 {
+    color: #ffffff;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.cancer-details {
+    color: #cccccc;
+    line-height: 1.8;
+}
+
+.cancer-details h4 {
+    color: #dc2626;
+    margin: 15px 0 10px 0;
+}
+
+.cancer-details ul {
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+.cancer-details li {
+    margin-bottom: 5px;
+}
+
+.result-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* Footer */
+.footer {
+    background-color: #1a1a1a;
+    border-top: 1px solid #333;
+    padding: 20px 0;
+    text-align: center;
+    color: #cccccc;
+}
+
+.footer p {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.footer strong {
+    color: #ffffff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .card-content {
+        padding: 20px;
+    }
+    
+    .image-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">🧠</div>
+                    <div class="logo-text">
+                        <h1>SkinAI Detector</h1>
+                        <p>Advanced Skin Cancer Detection System</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- Step 1: Patient Information -->
+            <div id="step-info" class="step active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>👤 Patient Information</h2>
+                        <p>Please provide your basic information to begin the analysis</p>
+                    </div>
+                    <div class="card-content">
+                        <form id="patient-form">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" placeholder="Enter your full name" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="age">Age</label>
+                                <input type="number" id="age" placeholder="Enter your age" min="1" max="120" required />
+                            </div>
+                            <button type="submit" class="btn btn-primary">Continue to Image Upload</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Upload Image -->
+            <div id="step-upload" class="step">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📷 Upload Skin Image</h2>
+                        <p id="patient-info">Patient: <span id="patient-name"></span>, Age: <span id="patient-age"></span></p>
+                    </div>
+                    <div class="card-content">
+                        <div id="upload-area" class="upload-area">
+                            <div class="upload-icon">📤</div>
+                            <h3>Choose Skin Image</h3>
+                            <p>Upload a clear photo of the skin area you want to analyze</p>
+                            <input type="file" id="image-input" accept="image/*" hidden />
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                onclick="document.getElementById('image-input').click()"
+                            >
+                                Select Image
+                            </button>
+                        </div>
+
+                        <div id="image-preview" class="image-preview" style="display: none;">
+                            <img id="preview-img" src="/placeholder.svg" alt="Uploaded skin image" />
+                            <div class="image-actions">
+                                <button type="button" class="btn btn-primary" onclick="predictSkinCancer()">
+                                    🧠 Predict Skin Cancer
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="uploadAgain()">
+                                    🔄 Upload Again
+                                </button>
+                                <button type="button" class="btn btn-danger" onclick="stopUpload()">
+                                    ⏹️ Stop Upload
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Analyzing -->
+            <div id="step-analyzing" class="step">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Analyzing Image</h2>
+                        <p>Our AI is examining your skin image...</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="loading-container">
+                            <div class="spinner"></div>
+                            <p>This may take a few moments</p>
+                            <button type="button" class="btn btn-danger" onclick="stopAnalysis()">
+                                ⏹️ Stop Analysis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Results -->
+            <div id="step-results" class="step">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 id="result-title">📊 Analysis Complete</h2>
+                        <p id="result-patient-info">Patient: <span id="result-name"></span>, Age: <span id="result-age"></span></p>
+                    </div>
+                    <div class="card-content">
+                        <div class="results-grid">
+                            <div class="result-image">
+                                <img id="result-img" src="/placeholder.svg" alt="Analyzed skin image" />
+                            </div>
+                            <div class="result-info">
+                                <div class="diagnosis">
+                                    <h3>Diagnosis</h3>
+                                    <p id="diagnosis-text" class="diagnosis-result"></p>
+                                </div>
+                                <div class="confidence">
+                                    <h3>Confidence Level</h3>
+                                    <div class="progress-bar">
+                                        <div id="confidence-bar" class="progress-fill"></div>
+                                    </div>
+                                    <p id="confidence-text">0% confidence</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detailed-info">
+                            <h3>Detailed Information</h3>
+                            <div id="cancer-details" class="cancer-details"></div>
+                        </div>
+
+                        <div class="recommendation">
+                            <h3>Recommendation</h3>
+                            <p id="recommendation-text"></p>
+                        </div>
+
+                        <div class="result-actions">
+                            <button type="button" class="btn btn-secondary" onclick="uploadAgain()">
+                                🔄 Upload Again
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="returnHome()">
+                                🏠 Return Home
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>
+                <strong>Disclaimer:</strong> This tool is for educational purposes only and should not replace professional
+                medical advice. Always consult with a qualified dermatologist for proper diagnosis and treatment.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Paste your full JavaScript code here, exactly as you sent it:
+
+        // Global variables
+        let currentStep = 'info';
+        let patientData = {};
+        let uploadedImage = null;
+        let analysisTimeout = null;
+
+        // Skin cancer types database
+        const skinCancerTypes = {
+            'Melanoma': {
+                description: 'Melanoma is the most serious type of skin cancer that develops in the cells (melanocytes) that produce melanin.',
+                symptoms: [
+                    'Asymmetrical moles',
+                    'Irregular borders',
+                    'Color variations (multiple colors in one mole)',
+                    'Diameter larger than 6mm',
+                    'Evolving size, shape, or color'
+                ],
+                riskFactors: [
+                    'Excessive UV exposure',
+                    'Fair skin',
+                    'Family history',
+                    'Multiple moles',
+                    'Weakened immune system'
+                ],
+                treatment: 'Early detection and surgical removal are crucial. May require additional treatments like immunotherapy or chemotherapy.',
+                urgency: 'HIGH - Requires immediate medical attention'
+            },
+            'Basal Cell Carcinoma': {
+                description: 'The most common type of skin cancer that begins in the basal cells of the skin.',
+                symptoms: [
+                    'Pearly or waxy bump',
+                    'Flat, flesh-colored lesion',
+                    'Bleeding or scabbing sore',
+                    'Brown, black, or blue lesion'
+                ],
+                riskFactors: [
+                    'Chronic sun exposure',
+                    'Fair skin',
+                    'Age over 50',
+                    'Male gender',
+                    'Previous skin cancer'
+                ],
+                treatment: 'Usually treated with surgical removal, Mohs surgery, or topical treatments.',
+                urgency: 'MODERATE - Schedule appointment within 2-4 weeks'
+            },
+            'Squamous Cell Carcinoma': {
+                description: 'A common form of skin cancer that develops in the squamous cells of the outer layer of skin.',
+                symptoms: [
+                    'Firm, red nodule',
+                    'Flat lesion with scaly surface',
+                    'New sore or raised area on old scar',
+                    'Rough, scaly patch on lip'
+                ],
+                riskFactors: [
+                    'Cumulative sun exposure',
+                    'Fair skin',
+                    'HPV infection',
+                    'Chronic wounds',
+                    'Immunosuppression'
+                ],
+                treatment: 'Surgical excision, radiation therapy, or topical chemotherapy depending on stage.',
+                urgency: 'MODERATE - Schedule appointment within 2-4 weeks'
+            },
+            'Actinic Keratosis': {
+                description: 'Precancerous skin condition caused by sun damage that may develop into squamous cell carcinoma.',
+                symptoms: [
+                    'Rough, scaly patches',
+                    'Pink, red, or brown coloration',
+                    'Flat or slightly raised',
+                    'Size of a pencil eraser or smaller'
+                ],
+                riskFactors: [
+                    'Sun exposure',
+                    'Fair skin',
+                    'Age over 40',
+                    'Outdoor occupation',
+                    'Geographic location'
+                ],
+                treatment: 'Cryotherapy, topical medications, or photodynamic therapy.',
+                urgency: 'LOW - Monitor and schedule routine check-up'
+            },
+            'Benign Mole': {
+                description: 'Non-cancerous skin growth that is usually harmless but should be monitored for changes.',
+                symptoms: [
+                    'Uniform color',
+                    'Symmetrical shape',
+                    'Regular borders',
+                    'Stable size and appearance'
+                ],
+                riskFactors: [
+                    'Genetics',
+                    'Sun exposure',
+                    'Fair skin',
+                    'Hormonal changes'
+                ],
+                treatment: 'Regular monitoring for changes. Removal only if cosmetic concerns or changes occur.',
+                urgency: 'LOW - Regular self-examination and annual check-ups'
+            },
+            'Normal Skin': {
+                description: 'Healthy skin tissue with no signs of malignancy or precancerous changes.',
+                symptoms: [
+                    'Even skin tone',
+                    'No unusual growths',
+                    'No irregular moles',
+                    'Healthy appearance'
+                ],
+                riskFactors: [
+                    'Continue sun protection',
+                    'Regular skin examinations',
+                    'Healthy lifestyle'
+                ],
+                treatment: 'Continue regular skin care and sun protection.',
+                urgency: 'NONE - Continue regular self-examinations'
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function () {
+            showStep('info');
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Patient form submission
+            document.getElementById('patient-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const name = document.getElementById('name').value;
+                const age = document.getElementById('age').value;
+
+                if (name && age) {
+                    patientData = { name, age };
+                    showStep('upload');
+                    updatePatientInfo();
+                }
+            });
+
+            // Image upload
+            document.getElementById('image-input').addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        uploadedImage = e.target.result;
+                        showImagePreview();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function showStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+
+            // Show current step
+            document.getElementById(`step-${step}`).classList.add('active');
+            currentStep = step;
+        }
+
+        function updatePatientInfo() {
+            document.getElementById('patient-name').textContent = patientData.name;
+            document.getElementById('patient-age').textContent = patientData.age;
+        }
+
+        function showImagePreview() {
+            document.getElementById('upload-area').style.display = 'none';
+            document.getElementById('image-preview').style.display = 'block';
+            document.getElementById('preview-img').src = uploadedImage;
+        }
+
+        function uploadAgain() {
+            document.getElementById('upload-area').style.display = 'block';
+            document.getElementById('image-preview').style.display = 'none';
+            document.getElementById('image-input').value = '';
+            uploadedImage = null;
+            showStep('upload');
+        }
+
+        function stopUpload() {
+            if (confirm('Are you sure you want to stop the upload process?')) {
+                uploadAgain();
+            }
+        }
+
+        function predictSkinCancer() {
+            if (!uploadedImage) {
+                alert('Please upload an image first.');
+                return;
+            }
+
+            showStep('analyzing');
+
+            // Simulate AI analysis with timeout
+            analysisTimeout = setTimeout(() => {
+                generateResults();
+                showResults();
+            }, 3000);
+        }
+
+        function stopAnalysis() {
+            if (analysisTimeout) {
+                clearTimeout(analysisTimeout);
+                analysisTimeout = null;
+            }
+
+            if (confirm('Are you sure you want to stop the analysis?')) {
+                showStep('upload');
+            }
+        }
+
+        function generateResults() {
+            // Mock results - in real application, this would come from AI API
+            const cancerTypes = Object.keys(skinCancerTypes);
+            const randomType = cancerTypes[Math.floor(Math.random() * cancerTypes.length)];
+            const confidence = Math.floor(Math.random() * 30) + 70; // 70-99%
+
+            const results = {
+                diagnosis: randomType,
+                confidence: confidence,
+                recommendation: getRecommendation(randomType, confidence)
+            };
+
+            return results;
+        }
+
+        function getRecommendation(diagnosis, confidence) {
+            const urgencyMap = {
+                'Melanoma': 'URGENT: Schedule immediate dermatologist consultation within 24-48 hours.',
+                'Basal Cell Carcinoma': 'Schedule dermatologist appointment within 2-4 weeks for proper evaluation.',
+                'Squamous Cell Carcinoma': 'Schedule dermatologist appointment within 2-4 weeks for proper evaluation.',
+                'Actinic Keratosis': 'Monitor closely and schedule routine dermatologist check-up within 2-3 months.',
+                'Benign Mole': 'Continue regular self-examination and annual dermatologist visits.',
+                'Normal Skin': 'Maintain skin health with sun protection and regular check-ups.'
+            };
+
+            return urgencyMap[diagnosis] || 'Consult a dermatologist for more information.';
+        }
+
+        function showResults() {
+            const results = generateResults();
+
+            // Update patient info
+            document.getElementById('result-name').textContent = patientData.name;
+            document.getElementById('result-age').textContent = patientData.age;
+
+            // Update image
+            document.getElementById('result-img').src = uploadedImage;
+
+            // Diagnosis
+            document.getElementById('diagnosis-text').textContent = results.diagnosis;
+
+            // Confidence bar and text
+            const confidenceBar = document.getElementById('confidence-bar');
+            confidenceBar.style.width = results.confidence + '%';
+            document.getElementById('confidence-text').textContent = results.confidence + '% confidence';
+
+            // Detailed info
+            const details = skinCancerTypes[results.diagnosis];
+            let detailsHTML = `<p><strong>Description:</strong> ${details.description}</p>`;
+            detailsHTML += `<p><strong>Symptoms:</strong></p><ul>`;
+            details.symptoms.forEach(symptom => {
+                detailsHTML += `<li>${symptom}</li>`;
+            });
+            detailsHTML += `</ul><p><strong>Risk Factors:</strong></p><ul>`;
+            details.riskFactors.forEach(risk => {
+                detailsHTML += `<li>${risk}</li>`;
+            });
+            detailsHTML += `</ul><p><strong>Treatment:</strong> ${details.treatment}</p>`;
+            detailsHTML += `<p><strong>Urgency Level:</strong> ${details.urgency}</p>`;
+
+            document.getElementById('cancer-details').innerHTML = detailsHTML;
+
+            // Recommendation
+            document.getElementById('recommendation-text').textContent = results.recommendation;
+
+            showStep('results');
+        }
+
+        function returnHome() {
+            // Reset everything to initial state
+            patientData = {};
+            uploadedImage = null;
+            document.getElementById('patient-form').reset();
+            uploadAgain();
+            showStep('info');
+        }
+    </script>
+</body>
+</html>
